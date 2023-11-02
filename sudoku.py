@@ -2,10 +2,11 @@ import numpy as np
 
 
 class Sudoku:
-    def __init__(self, board: [[]]):
+    def __init__(self, board: [[]], even_cells: []):
         self.matrix = np.array(board)
         self.possibilities = list(list())
         self.count = 0
+        self.even_cells = even_cells
 
     def check_row(self, row, number):
         return number not in self.matrix[row, :]
@@ -57,16 +58,18 @@ class Sudoku:
         for i in range(9):
             for j in range(9):
                 if self.matrix[i][j] == 0:
-
-                    num_possibilities = sum(1 for num in range(1, 10) if self.is_valid_move(i, j, num))
-                    empty_cells.append(((i, j), num_possibilities))
+                    if (i, j) in self.even_cells:
+                        num_possibilities = sum(1 for num in range(2, 10, 2) if self.is_valid_move(i, j, num))
+                        empty_cells.append(((i, j), num_possibilities))
+                    else:
+                        num_possibilities = sum(1 for num in range(1, 10) if self.is_valid_move(i, j, num))
+                        empty_cells.append(((i, j), num_possibilities))
 
         empty_cells.sort(key=lambda cell: cell[1])
 
         return [cell[0] for cell in empty_cells]
 
     def solve_with_mrv(self):
-        print(self.matrix)
         self.count += 1
         empty_cells = self.get_empty_cells_mrv()
         if not empty_cells:
@@ -76,8 +79,6 @@ class Sudoku:
         for num in range(1, 10):
             if self.is_valid_move(row, col, num):
                 self.matrix[row][col] = num
-                print(num)
-
                 if self.solve_with_mrv():
                     return True
 
